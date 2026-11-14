@@ -49,13 +49,37 @@ const systemSettingSchema = new mongoose.Schema(
     },
     smsProvider: {
       type: String,
-      enum: ['decider', 'fivesim', 'mock'],
-      default: 'decider',
+      enum: ['decider', 'fivesim', 'freetemp', 'free', 'mock'],
+      default: 'fivesim',
     },
     fiveSimApiKey: {
       type: String,
       default: '',
       trim: true,
+    },
+    // AI Assistant Configuration
+    aiEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    aiProvider: {
+      type: String,
+      enum: ['auto', 'gemini', 'groq'],
+      default: 'auto',
+    },
+    geminiApiKey: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    groqApiKey: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    aiSystemPrompt: {
+      type: String,
+      default: '',
     },
   },
   { timestamps: true }

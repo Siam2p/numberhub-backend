@@ -15,6 +15,8 @@ const config = {
   smsProviderApiKey: process.env.FIVESIM_API_KEY || process.env.SMS_PROVIDER_API_KEY || '',
   fiveSimApiKey: process.env.FIVESIM_API_KEY || '',
   smsProviderWebhookSecret: process.env.SMS_PROVIDER_WEBHOOK_SECRET || 'mock-webhook-secret',
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
+  groqApiKey: process.env.GROQ_API_KEY || '',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   retentionDays: parseInt(process.env.MESSAGE_RETENTION_DAYS || '7', 10),
 };

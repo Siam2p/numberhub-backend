@@ -1,5 +1,6 @@
 const DeciderProvider = require('./DeciderProvider');
 const FiveSimProvider = require('./FiveSimProvider');
+const FreeTempProvider = require('./FreeTempProvider');
 const MockSmsProvider = require('./MockSmsProvider');
 const config = require('../config');
 
@@ -13,6 +14,10 @@ const getProvider = () => {
       case '5sim':
         currentProvider = new FiveSimProvider();
         break;
+      case 'freetemp':
+      case 'free':
+        currentProvider = new FreeTempProvider();
+        break;
       case 'mock':
         currentProvider = new MockSmsProvider();
         break;
@@ -25,7 +30,7 @@ const getProvider = () => {
   return currentProvider;
 };
 
-// Reset provider instance (useful in tests)
+// Reset provider instance (useful in tests or when switching via Admin Dashboard)
 const setProvider = (providerInstance) => {
   currentProvider = providerInstance;
 };
@@ -35,5 +40,6 @@ module.exports = {
   setProvider,
   DeciderProvider,
   FiveSimProvider,
+  FreeTempProvider,
   MockSmsProvider,
 };

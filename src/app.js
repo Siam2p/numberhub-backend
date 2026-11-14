@@ -22,7 +22,12 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       const allowed = [config.frontendUrl, 'http://localhost:5173', 'http://127.0.0.1:5173'];
-      if (allowed.includes(origin) || config.nodeEnv === 'development') {
+      if (
+        allowed.includes(origin) ||
+        config.nodeEnv === 'development' ||
+        origin.endsWith('.vercel.app') ||
+        (config.frontendUrl && origin.includes(config.frontendUrl))
+      ) {
         return callback(null, true);
       }
       return callback(new Error('Blocked by CORS policy'));

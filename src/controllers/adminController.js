@@ -245,8 +245,19 @@ class AdminController {
         minDeposit: Number(minDeposit) || 0.5,
       };
 
-      if (smsProvider) update.smsProvider = smsProvider;
+      if (smsProvider) {
+        update.smsProvider = smsProvider;
+        try {
+          const { setProvider } = require('../providers');
+          setProvider(null);
+        } catch (_) {}
+      }
       if (fiveSimApiKey !== undefined) update.fiveSimApiKey = fiveSimApiKey;
+      if (req.body.aiEnabled !== undefined) update.aiEnabled = Boolean(req.body.aiEnabled);
+      if (req.body.aiProvider !== undefined) update.aiProvider = req.body.aiProvider;
+      if (req.body.geminiApiKey !== undefined) update.geminiApiKey = req.body.geminiApiKey;
+      if (req.body.groqApiKey !== undefined) update.groqApiKey = req.body.groqApiKey;
+      if (req.body.aiSystemPrompt !== undefined) update.aiSystemPrompt = req.body.aiSystemPrompt;
 
       const setting = await SystemSetting.findOneAndUpdate(
         { key: 'payment_config' },

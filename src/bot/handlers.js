@@ -15,6 +15,7 @@ const countryService = require('../services/countryService');
 const numberService = require('../services/numberService');
 const assignmentService = require('../services/assignmentService');
 const messageService = require('../services/messageService');
+const aiService = require('../services/aiService');
 const { getProvider } = require('../providers');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
@@ -973,6 +974,19 @@ const handleTextMessage = async (ctx, next) => {
   if (otpMatch) {
     const cleanOtp = otpMatch[0].replace('-', '');
     return handleOtpInput(ctx, cleanOtp);
+  }
+
+  // 4. Send message to AI Assistant
+  try {
+    const aiAnswer = await aiService.generateAnswer({
+      user: ctx.state.user,
+      userMessage: text,
+    });
+    if (aiAnswer) {
+      return ctx.reply(aiAnswer, { parse_mode: 'Markdown' });
+    }
+  } catch (aiErr) {
+    console.warn('[Bot] AI processing error:', aiErr.message);
   }
 
   return next();
