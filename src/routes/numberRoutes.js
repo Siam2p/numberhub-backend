@@ -24,5 +24,7 @@ router.post('/otp', numberController.simulateOtp);
 router.get('/', requireAuth, numberController.getNumbers);
 router.get('/:id', requireAuth, numberController.getNumberById);
 router.post('/', requireAuth, validate(createNumberSchema), numberController.createNumber);
+router.patch('/:id', requireAuth, numberController.updateNumber);
+router.delete('/:id', requireAuth, numberController.deleteNumber);
 
 module.exports = router;

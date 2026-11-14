@@ -92,18 +92,31 @@ class AssignmentService {
       });
     }
 
-    // 1. Look for available numbers in DB
+    // 1. Look for available numbers in DB (matches WhatsApp/Telegram or any available in fleet)
     let availableNumbers = await PhoneNumber.find({
       countryId: country._id,
       status: 'available',
-      supportedServices: service.toLowerCase(),
+      $or: [
+        { supportedServices: service.toLowerCase() },
+        { capabilities: service.toLowerCase() },
+        { supportedServices: { $exists: false } },
+        { supportedServices: { $size: 0 } },
+      ],
     }).limit(count);
 
-    // 2. If fewer than 3 available, generate dynamically using DeciderProvider
+    // 2. If fewer than needed, query provider with graceful fallback
     if (availableNumbers.length < count) {
       const needed = count - availableNumbers.length;
       const provider = getProvider();
-      const newNumbers = await provider.getAvailableNumbers(country.code, service, needed);
+      let newNumbers = [];
+      try {
+        newNumbers = await provider.getAvailableNumbers(country.code, service, needed);
+      } catch (providerErr) {
+        console.warn(`[Assignment] Provider ${provider.name} failed (${providerErr.message}). Falling back to Decider provider.`);
+        const DeciderProvider = require('../providers/DeciderProvider');
+        const fallbackProvider = new DeciderProvider();
+        newNumbers = await fallbackProvider.getAvailableNumbers(country.code, service, needed);
+      }
 
       for (const item of newNumbers) {
         let phone = await PhoneNumber.findOne({ number: item.number });

@@ -23,8 +23,9 @@ const DEFAULT_SYSTEM_PROMPT =
 
 /**
  * Call Google Gemini REST API (100% Free tier available on AI Studio)
+ * Tries modern fast Gemini models with resilient fallback (e.g. if 503 high demand occurs)
  */
-const callGemini = (apiKey, userMessage, systemPrompt) => {
+const callGeminiSingle = (apiKey, userMessage, systemPrompt, modelName = 'gemini-3.5-flash') => {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
       systemInstruction: {
@@ -42,7 +43,7 @@ const callGemini = (apiKey, userMessage, systemPrompt) => {
       },
     });
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     const req = https.request(
       url,
@@ -81,6 +82,22 @@ const callGemini = (apiKey, userMessage, systemPrompt) => {
     req.write(payload);
     req.end();
   });
+};
+
+const callGemini = async (apiKey, userMessage, systemPrompt) => {
+  const models = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+  let lastErr = null;
+
+  for (const model of models) {
+    try {
+      return await callGeminiSingle(apiKey, userMessage, systemPrompt, model);
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[AI Service] ${model} failed (${err.message}), trying next model...`);
+    }
+  }
+
+  throw lastErr || new Error('All Gemini models failed');
 };
 
 /**

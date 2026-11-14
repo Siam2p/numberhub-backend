@@ -79,6 +79,78 @@ class NumberController {
   }
 
   /**
+   * Update an existing phone number (Edit number, country, status)
+   */
+  async updateNumber(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { number, countryId, status, provider, capabilities } = req.body;
+
+      const updateData = {};
+      if (number) updateData.number = number.trim();
+      if (countryId) updateData.countryId = countryId;
+      if (status) updateData.status = status;
+      if (provider) updateData.provider = provider;
+      if (capabilities) updateData.capabilities = capabilities;
+
+      const updated = await PhoneNumber.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      ).populate('countryId', 'name flag code dialCode');
+
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Phone number not found' });
+      }
+
+      await logAuditEvent({
+        req,
+        action: 'UPDATE_PHONE_NUMBER',
+        targetId: updated._id,
+        targetType: 'PhoneNumber',
+        details: updateData,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Number updated successfully',
+        number: updated,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Delete or retire a phone number from the fleet
+   */
+  async deleteNumber(req, res, next) {
+    try {
+      const { id } = req.params;
+      const phone = await PhoneNumber.findByIdAndDelete(id);
+
+      if (!phone) {
+        return res.status(404).json({ success: false, message: 'Phone number not found' });
+      }
+
+      await logAuditEvent({
+        req,
+        action: 'DELETE_PHONE_NUMBER',
+        targetId: id,
+        targetType: 'PhoneNumber',
+        details: { number: phone.number },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Phone number removed from fleet',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Simulate or send an OTP to a designated number
    */
   async simulateOtp(req, res, next) {
