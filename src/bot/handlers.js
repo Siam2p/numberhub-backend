@@ -230,9 +230,31 @@ const handleAddBalance = async (ctx) => {
   const user = ctx.state.user;
   const balance = user ? (user.balance || 0).toFixed(2) : '0.00';
 
+  let binancePayId = process.env.BINANCE_PAY_ID || '987654321';
+  let binanceUid = process.env.BINANCE_UID || '876543210';
+  let binanceAddress = process.env.BINANCE_USDT_ADDRESS || 'TYDzsYndWh2EzfNgPv5smvWgkBFqRmsBgp';
+  let network = 'TRC20 / BEP20';
+
+  try {
+    const setting = await SystemSetting.findOne({ key: 'payment_config' });
+    if (setting) {
+      if (setting.binancePayId) binancePayId = setting.binancePayId;
+      if (setting.binanceUid) binanceUid = setting.binanceUid;
+      if (setting.binanceAddress) binanceAddress = setting.binanceAddress;
+      if (setting.network) network = setting.network;
+    }
+  } catch (_) {}
+
   const text =
-    `💰 *Deposit USDT via Binance*\n\n` +
+    `💰 *Deposit USDT via Binance*\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
     `🏦 *Current Balance:* \`${balance} USDT\`\n\n` +
+    `👉 *Our Official Binance Deposit Details:*\n` +
+    `• *Binance Pay ID:* \`${binancePayId}\` _(tap to copy)_\n` +
+    `• *Binance UID:* \`${binanceUid}\` _(tap to copy)_\n` +
+    `• *Network:* *${network}*\n` +
+    `• *USDT Address:*\n\`${binanceAddress}\` _(tap to copy)_\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
     `Select the amount you want to deposit:`;
 
   return ctx.reply(text, {
