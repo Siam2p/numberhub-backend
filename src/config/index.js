@@ -6,7 +6,10 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongodbUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/numberhub',
+  mongodbUri:
+    process.env.NODE_ENV === 'test'
+      ? process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/numberhub_test'
+      : process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/numberhub',
   botToken: process.env.BOT_TOKEN || '',
   jwtSecret: process.env.JWT_SECRET || 'numberhub_fallback_secret_change_me',
   adminEmail: process.env.ADMIN_EMAIL || 'admin@numberhub.local',
