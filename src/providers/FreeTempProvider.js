@@ -151,6 +151,22 @@ class FreeTempProvider extends BaseProvider {
     return { success: true };
   }
 
+  generateOtp(service = 'whatsapp') {
+    const isTelegram = service.toLowerCase() === 'telegram';
+    if (isTelegram) {
+      const code = String(Math.floor(10000 + Math.random() * 90000));
+      const message = `Telegram code: ${code}. You can also tap on this link to log in. Do not give this code to anyone.`;
+      return { code, message, service: 'telegram' };
+    } else {
+      const p1 = Math.floor(100 + Math.random() * 900);
+      const p2 = Math.floor(100 + Math.random() * 900);
+      const code = `${p1}${p2}`;
+      const formattedCode = `${p1}-${p2}`;
+      const message = `Your WhatsApp code: ${formattedCode}. You can also tap on this link to verify your account: v.whatsapp.com/${code}. Do not share this code.`;
+      return { code, formattedCode, message, service: 'whatsapp' };
+    }
+  }
+
   async getProfile() {
     return {
       provider: 'FreeTempProvider',

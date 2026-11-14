@@ -341,11 +341,13 @@ const provisionAndDisplayNumber = async (ctx, countryCode = 'EC') => {
     });
   }
 
-  const price = countryDoc.price !== undefined ? Number(countryDoc.price) : 0.15;
+  const provider = getProvider();
+  const isFree = provider.name === 'FreeTempProvider';
+  const price = isFree ? 0 : (countryDoc.price !== undefined ? Number(countryDoc.price) : 0.15);
   const userBalance = Number((user.balance || 0).toFixed(4));
 
-  // Balance Check
-  if (userBalance < price) {
+  // Balance Check (only required for paid providers)
+  if (!isFree && userBalance < price) {
     const needed = (price - userBalance).toFixed(2);
     const text =
       `⚠️ *Insufficient Balance!*\n` +
@@ -365,12 +367,13 @@ const provisionAndDisplayNumber = async (ctx, countryCode = 'EC') => {
     });
   }
 
-  // Deduct balance
-  user.balance = Number((userBalance - price).toFixed(4));
-  await user.save();
-  ctx.state.user = user;
+  // Deduct balance for paid providers
+  if (!isFree && price > 0) {
+    user.balance = Number((userBalance - price).toFixed(4));
+    await user.save();
+    ctx.state.user = user;
+  }
 
-  const provider = getProvider();
   const country = {
     ...provider.getCountryConfig(countryCode),
     name: countryDoc.name,
